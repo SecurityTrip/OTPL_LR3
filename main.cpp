@@ -184,80 +184,95 @@ void LexAnalysis(char* text, int size, vector <Lex>& vec)
 	}
 	}
 
+void read(ifstream &fin, int &out_size, char *&out_text){
+    int size = 0;
+    fin.seekg(0, ios::end);
+    size = fin.tellg();
+    fin.seekg(0, ios::beg);
+    char* text = new char[++size];
+    fin.getline(text, size, '\0');
+    out_size = size;
+    out_text = text;
+}
+
+void write(vector <Lex> &array, ofstream &fout){
+
+    for (size_t i = 0; i < (size_t)array.size(); ++i)
+    {
+        cout << array[i].str;
+        if ((array[i].type == digit) && (-32768  < atoi(array[i].str) ) && (atoi(array[i].str) < 32767)) cout << "[vl]" << ' ';
+        else if (array[i].type == eq) cout << "[eq]" << ' ';
+        else if (array[i].type == co1) cout << "[co]" << ' ';
+        else if (array[i].type == ao) cout << "[ao]" << ' ';
+        else if (array[i].type == other) cout << "[wl]" << ' ';
+        else if (array[i].type == semicolon) cout << "[sc]" << ' ';
+        else if (array[i].type == alpha)
+        {
+            if (!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "not") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "or")) cout << "[kw]" << ' ';
+            else if (array[i].len <= 5) cout << "[id]" << ' ';
+            else cout << "[wl]" << ' ';
+        }
+        else cout << "[wl]" << ' ';
+        fout << array[i].str;
+        if ((array[i].type == digit) && (-32768 < atoi(array[i].str)) && (atoi(array[i].str) < 32767)) fout << "[vl]" << ' ';
+        else if (array[i].type == eq) fout << "[eq]" << ' ';
+        else if (array[i].type == co1) fout << "[co]" << ' ';
+        else if (array[i].type == ao) fout << "[ao]" << ' ';
+        else if (array[i].type == other) fout << "[wl]" << ' ';
+        else if (array[i].type == semicolon) fout << "[sc]" << ' ';
+        else if (array[i].type == alpha)
+        {
+            if (!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "not") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "or")) fout << "[kw]" << ' ';
+            else if (array[i].len <= 5) fout << "[id]" << ' ';
+            else fout << "[wl]" << ' ';
+        }
+        else fout << "[wl]" << ' ';
+    }
+
+    cout << '\n';
+    fout << '\n';
+
+    for (int i = 0; i < (int)array.size(); ++i)
+    {
+        if (array[i].type == alpha)
+        {
+            if (!(!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "or") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "not")) && (array[i].len <= 5))
+            {
+                cout << array[i].str << ' ';
+                fout << array[i].str << ' ';
+            }
+        }
+    }
+
+    cout << '\n';
+    fout << '\n';
+
+    for (int i = 0; i < (int)array.size(); ++i)
+    {
+        if ((array[i].type == digit) && (-32768 < atoi(array[i].str)) && (atoi(array[i].str) < 32767))
+        {
+            cout << array[i].str << ' ';
+            fout << array[i].str << ' ';
+        }
+    }
+}
 
 int main()
 {
-	ifstream fin("input.txt");
-	ofstream fout("output.txt");
-	int size = 0;
-	while (fin.get() != EOF) ++size;
-	fin.clear();
-	fin.seekg(0);
-	char* text = new char[++size];
-	fin.getline(text, size, '\0');
-	fin.close();
+    int size;
+    char* text;
+
+    ifstream fin("input.txt");
+    read(fin,size,text);
+    fin.close();
+
 	vector <Lex> array;
 	LexAnalysis(text, size, array);
 	delete[] text;
 
-	for (size_t i = 0; i < (size_t)array.size(); ++i)
-	{
-		cout << array[i].str;
-		if ((array[i].type == digit) && (-32768  < atoi(array[i].str) ) && (atoi(array[i].str) < 32767)) cout << "[vl]" << ' ';
-		else if (array[i].type == eq) cout << "[eq]" << ' ';
-		else if (array[i].type == co1) cout << "[co]" << ' ';
-		else if (array[i].type == ao) cout << "[ao]" << ' ';
-		else if (array[i].type == other) cout << "[wl]" << ' ';
-		else if (array[i].type == semicolon) cout << "[sc]" << ' ';
-		else if (array[i].type == alpha)
-		{
-			if (!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "not") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "or")) cout << "[kw]" << ' ';
-			else if (array[i].len <= 5) cout << "[id]" << ' ';
-			else cout << "[wl]" << ' ';
-		}
-		else cout << "[wl]" << ' ';
-		fout << array[i].str;
-		if ((array[i].type == digit) && (-32768 < atoi(array[i].str)) && (atoi(array[i].str) < 32767)) fout << "[vl]" << ' ';
-        else if (array[i].type == eq) fout << "[eq]" << ' ';
-		else if (array[i].type == co1) fout << "[co]" << ' ';
-		else if (array[i].type == ao) fout << "[ao]" << ' ';
-		else if (array[i].type == other) fout << "[wl]" << ' ';
-		else if (array[i].type == semicolon) fout << "[sc]" << ' ';
-		else if (array[i].type == alpha)
-		{
-			if (!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "not") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "or")) fout << "[kw]" << ' ';
-			else if (array[i].len <= 5) fout << "[id]" << ' ';
-			else fout << "[wl]" << ' ';
-		}
-		else fout << "[wl]" << ' ';
-	}
-
-	cout << '\n';
-	fout << '\n';
-
-	for (int i = 0; i < (int)array.size(); ++i)
-	{
-		if (array[i].type == alpha)
-		{
-			if (!(!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "or") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "not")) && (array[i].len <= 5))
-			{
-				cout << array[i].str << ' ';
-				fout << array[i].str << ' ';
-			}
-		}
-	}
-
-	cout << '\n';
-	fout << '\n';
-
-	for (int i = 0; i < (int)array.size(); ++i)
-	{
-		if ((array[i].type == digit) && (-32768 < atoi(array[i].str)) && (atoi(array[i].str) < 32767))
-		{
-			cout << array[i].str << ' ';
-			fout << array[i].str << ' ';
-		}
-	}
+    ofstream fout("output.txt");
+    write(array, fout);
 	fout.close();
+
 	return 0;
 }
