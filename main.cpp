@@ -5,7 +5,7 @@
 
 using namespace std;
 
-enum AState{S, A, B, C, D, G, H, E, F, Y, X, Z};
+enum AnalysisStates{S, A, B, C, D, G, H, E, F, Y, X, Z};
 enum ELexType{alpha, digit, separator, eq, co1, co2, ao, other, semicolon};
 
 struct Lex
@@ -15,144 +15,138 @@ struct Lex
 	int len;
 };
 
-char* word(char* text, int begin, int end)		//функция, которая возщвращает слово
+char* word(char* str, int begin, int end)
 {
-	char* slovo = new char[end - begin + 1];
+	char* word = new char[end - begin + 1];
 	int i = 0;
 	while (begin < end)
 	{
-		slovo[i] = text[begin];
+        word[i] = str[begin];
 		++i;
 		++begin;
 	}
-	slovo[i] = '\0';
-	return slovo;
+    word[i] = '\0';
+	return word;
 }
 
-void LexAnalysis(char* text, int size, vector <Lex>& vec)		//функция лексического анализа
+void correctPosition(int &position){
+    --position;
+}
+
+void LexAnalysis(char* text, int size, vector <Lex>& vec)
 {
-	int pos = 0; //текущая позиция в строке
-	AState state = AState::S; //текущее состояние
-	Lex lexema; //текущая лексема
-	int firstPos; //позиция начала лексемы
+	int pos = 0;
+	AnalysisStates state = AnalysisStates::S;
+	Lex lexem;
+	int firstPos;
 	int character;
-	AState matr[12][9];  //матрица состояний
+	AnalysisStates matrix[12][9];
 
-	matr[AState::S][separator] = AState::S; //разделитель
-	matr[AState::S][alpha] = AState::A; //буква
-	matr[AState::S][digit] = AState::B; //цифра
-	matr[AState::S][co1] = AState::C;	//знак меньше
-	matr[AState::S][co2] = AState::D;	//знак больше
-	matr[AState::S][eq] = AState::G;	// знак равенства
-	matr[AState::S][ao] = AState::H;	//арифметическая операция
-	matr[AState::S][other] = AState::E; //остальное
-	matr[AState::S][semicolon] = AState::X; //точка с запятой
+	matrix[AnalysisStates::S][separator] = AnalysisStates::S;   //разделитель
+	matrix[AnalysisStates::S][alpha] = AnalysisStates::A;       //буква
+	matrix[AnalysisStates::S][digit] = AnalysisStates::B;       //цифра
+	matrix[AnalysisStates::S][co1] = AnalysisStates::C;	        //знак меньше
+	matrix[AnalysisStates::S][co2] = AnalysisStates::D;	        //знак больше
+	matrix[AnalysisStates::S][eq] = AnalysisStates::G;	        //знак равенства
+	matrix[AnalysisStates::S][ao] = AnalysisStates::H;	        //арифметическая операция
+	matrix[AnalysisStates::S][other] = AnalysisStates::E;       //остальное
+	matrix[AnalysisStates::S][semicolon] = AnalysisStates::X;   //точка с запятой
 
-	matr[AState::A][separator] = AState::F; //разделитель
-	matr[AState::A][alpha] = AState::A; //буква
-	matr[AState::A][digit] = AState::A; //цифра
-	matr[AState::A][co1] = AState::F;	//знак меньше
-	matr[AState::A][co2] = AState::F;	//знак больше
-	matr[AState::A][eq] = AState::F;	// знак равенства
-	matr[AState::A][ao] = AState::F;	//арифметическая операция
-	matr[AState::A][other] = AState::E; //остальное
-	matr[AState::A][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::A][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::A][alpha] = AnalysisStates::A;       //буква
+	matrix[AnalysisStates::A][digit] = AnalysisStates::A;       //цифра
+	matrix[AnalysisStates::A][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::A][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::A][eq] = AnalysisStates::F;	        //знак равенства
+	matrix[AnalysisStates::A][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::A][other] = AnalysisStates::E;       //остальное
+	matrix[AnalysisStates::A][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::B][separator] = AState::F; //разделитель
-	matr[AState::B][alpha] = AState::E; //буква
-	matr[AState::B][digit] = AState::B; //цифра
-	matr[AState::B][co1] = AState::F;	//знак меньше
-	matr[AState::B][co2] = AState::F;	//знак больше
-	matr[AState::B][eq] = AState::F;	// знак равенства
-	matr[AState::B][ao] = AState::F;	//арифметическая операция
-	matr[AState::B][other] = AState::E; //остальное
-	matr[AState::B][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::B][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::B][alpha] = AnalysisStates::E;       //буква
+	matrix[AnalysisStates::B][digit] = AnalysisStates::B;       //цифра
+	matrix[AnalysisStates::B][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::B][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::B][eq] = AnalysisStates::F;	        //знак равенства
+	matrix[AnalysisStates::B][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::B][other] = AnalysisStates::E;       //остальное
+	matrix[AnalysisStates::B][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::C][separator] = AState::F; //разделитель
-	matr[AState::C][alpha] = AState::F; //буква
-	matr[AState::C][digit] = AState::F; //цифра
-	matr[AState::C][co1] = AState::F;	//знак меньше
-	matr[AState::C][co2] = AState::Z;	//знак больше
-	matr[AState::C][eq] = AState::Y;	// знак равенства
-	matr[AState::C][ao] = AState::F;	//арифметическая операция
-	matr[AState::C][other] = AState::F; //остальное
-	matr[AState::C][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::C][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::C][alpha] = AnalysisStates::F;       //буква
+	matrix[AnalysisStates::C][digit] = AnalysisStates::F;       //цифра
+	matrix[AnalysisStates::C][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::C][co2] = AnalysisStates::Z;	        //знак больше
+	matrix[AnalysisStates::C][eq] = AnalysisStates::F;	        //знак равенства
+	matrix[AnalysisStates::C][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::C][other] = AnalysisStates::F;       //остальное
+	matrix[AnalysisStates::C][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::D][separator] = AState::F; //разделитель
-	matr[AState::D][alpha] = AState::F; //буква
-	matr[AState::D][digit] = AState::F; //цифра
-	matr[AState::D][co1] = AState::F;	//знак меньше
-	matr[AState::D][co2] = AState::F;	//знак больше
-	matr[AState::D][eq] = AState::Y;	// знак равенства
-	matr[AState::D][ao] = AState::F;	//арифметическая операция
-	matr[AState::D][other] = AState::F; //остальное
-	matr[AState::D][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::D][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::D][alpha] = AnalysisStates::F;       //буква
+	matrix[AnalysisStates::D][digit] = AnalysisStates::F;       //цифра
+	matrix[AnalysisStates::D][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::D][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::D][eq] = AnalysisStates::Y;	        //знак равенства
+	matrix[AnalysisStates::D][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::D][other] = AnalysisStates::F;       //остальное
+	matrix[AnalysisStates::D][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::G][separator] = AState::F; //разделитель
-	matr[AState::G][alpha] = AState::F; //буква
-	matr[AState::G][digit] = AState::F; //цифра
-	matr[AState::G][co1] = AState::F;	//знак меньше
-	matr[AState::G][co2] = AState::F;	//знак больше
-	matr[AState::G][eq] = AState::F;	// знак равенства
-	matr[AState::G][ao] = AState::F;	//арифметическая операция
-	matr[AState::G][other] = AState::F; //остальное
-	matr[AState::G][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::G][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::G][alpha] = AnalysisStates::F;       //буква
+	matrix[AnalysisStates::G][digit] = AnalysisStates::F;       //цифра
+	matrix[AnalysisStates::G][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::G][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::G][eq] = AnalysisStates::F;	        //знак равенства
+	matrix[AnalysisStates::G][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::G][other] = AnalysisStates::F;       //остальное
+	matrix[AnalysisStates::G][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::H][separator] = AState::F; //разделитель
-	matr[AState::H][alpha] = AState::F; //буква
-	matr[AState::H][digit] = AState::F; //цифра
-	matr[AState::H][co1] = AState::F;	//знак меньше
-	matr[AState::H][co2] = AState::F;	//знак больше
-	matr[AState::H][eq] = AState::F;	// знак равенства
-	matr[AState::H][ao] = AState::F;	//арифметическая операция
-	matr[AState::H][other] = AState::F; //остальное
-	matr[AState::H][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::H][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::H][alpha] = AnalysisStates::F;       //буква
+	matrix[AnalysisStates::H][digit] = AnalysisStates::F;       //цифра
+	matrix[AnalysisStates::H][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::H][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::H][eq] = AnalysisStates::F;	        // знак равенства
+	matrix[AnalysisStates::H][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::H][other] = AnalysisStates::F;       //остальное
+	matrix[AnalysisStates::H][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::E][separator] = AState::F; //разделитель
-	matr[AState::E][alpha] = AState::E; //буква
-	matr[AState::E][digit] = AState::E; //цифра
-	matr[AState::E][co1] = AState::F;	//знак меньше
-	matr[AState::E][co2] = AState::F;	//знак больше
-	matr[AState::E][eq] = AState::F;	// знак равенства
-	matr[AState::E][ao] = AState::F;	//арифметическая операция
-	matr[AState::E][other] = AState::E; //остальное
-	matr[AState::E][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::E][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::E][alpha] = AnalysisStates::E;       //буква
+	matrix[AnalysisStates::E][digit] = AnalysisStates::E;       //цифра
+	matrix[AnalysisStates::E][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::E][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::E][eq] = AnalysisStates::F;	        //знак равенства
+	matrix[AnalysisStates::E][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::E][other] = AnalysisStates::E;       //остальное
+	matrix[AnalysisStates::E][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::Y][separator] = AState::F; //разделитель
-	matr[AState::Y][alpha] = AState::F; //буква
-	matr[AState::Y][digit] = AState::F; //цифра
-	matr[AState::Y][co1] = AState::F;	//знак меньше
-	matr[AState::Y][co2] = AState::F;	//знак больше
-	matr[AState::Y][eq] = AState::F;	// знак равенства
-	matr[AState::Y][ao] = AState::F;	//арифметическая операция
-	matr[AState::Y][other] = AState::F; //остальное
-	matr[AState::Y][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::X][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::X][alpha] = AnalysisStates::F;       //буква
+	matrix[AnalysisStates::X][digit] = AnalysisStates::F;       //цифра
+	matrix[AnalysisStates::X][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::X][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::X][eq] = AnalysisStates::F;	        //знак равенства
+	matrix[AnalysisStates::X][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::X][other] = AnalysisStates::F;       //остальное
+	matrix[AnalysisStates::X][semicolon] = AnalysisStates::F;   //точка с запятой
 
-	matr[AState::X][separator] = AState::F; //разделитель
-	matr[AState::X][alpha] = AState::F; //буква
-	matr[AState::X][digit] = AState::F; //цифра
-	matr[AState::X][co1] = AState::F;	//знак меньше
-	matr[AState::X][co2] = AState::F;	//знак больше
-	matr[AState::X][eq] = AState::F;	// знак равенства
-	matr[AState::X][ao] = AState::F;	//арифметическая операция
-	matr[AState::X][other] = AState::F; //остальное
-	matr[AState::X][semicolon] = AState::F; //точка с запятой
-
-	matr[AState::Z][separator] = AState::F; //разделитель
-	matr[AState::Z][alpha] = AState::F; //буква
-	matr[AState::Z][digit] = AState::F; //цифра
-	matr[AState::Z][co1] = AState::F;	//знак меньше
-	matr[AState::Z][co2] = AState::F;	//знак больше
-	matr[AState::Z][eq] = AState::F;	// знак равенства
-	matr[AState::Z][ao] = AState::F;	//арифметическая операция
-	matr[AState::Z][other] = AState::F; //остальное
-	matr[AState::Z][semicolon] = AState::F; //точка с запятой
+	matrix[AnalysisStates::Z][separator] = AnalysisStates::F;   //разделитель
+	matrix[AnalysisStates::Z][alpha] = AnalysisStates::F;       //буква
+	matrix[AnalysisStates::Z][digit] = AnalysisStates::F;       //цифра
+	matrix[AnalysisStates::Z][co1] = AnalysisStates::F;	        //знак меньше
+	matrix[AnalysisStates::Z][co2] = AnalysisStates::F;	        //знак больше
+	matrix[AnalysisStates::Z][eq] = AnalysisStates::F;	        //знак равенства
+	matrix[AnalysisStates::Z][ao] = AnalysisStates::F;	        //арифметическая операция
+	matrix[AnalysisStates::Z][other] = AnalysisStates::F;       //остальное
+	matrix[AnalysisStates::Z][semicolon] = AnalysisStates::F;   //точка с запятой
 
 	while (pos < size)
 	{
 		char curr = text[pos];
-		//инициализация лексемы при обнаружении непробельного символа
-		if (state == AState::S && !(curr == ' ' || curr == '\t' || curr == '\n')) firstPos = pos;
+
+		if (state == AnalysisStates::S && !(curr == ' ' || curr == '\t' || curr == '\n')) firstPos = pos;
 
 		if ((curr == '\n') || (curr == ' ') || (curr == '\t') || (curr == '\0')) character = separator;
 		else if ((('A' <= curr) && (curr <= 'Z')) || (('a' <= curr) && (curr <= 'z'))) character = alpha;
@@ -164,32 +158,31 @@ void LexAnalysis(char* text, int size, vector <Lex>& vec)		//функция ле
 		else if (curr == ';') character = semicolon;
 		else character = other;
 
-		state = matr[state][character];
+		state = matrix[state][character];
 
-		if (state == AState::A) lexema.type = alpha;
-		else if (state == AState::B) lexema.type = digit;
-		else if (state == AState::C || state == AState::D) lexema.type = co1;
-		else if (state == AState::E) lexema.type = other;
-		else if (state == AState::G) lexema.type = eq;
-		else if (state == AState::H) lexema.type = ao;
-		else if (state == AState::X) lexema.type = semicolon;
-		else if (state == AState::Z) lexema.type = co1;
+		if (state == AnalysisStates::A) lexem.type = alpha;
+		else if (state == AnalysisStates::B) lexem.type = digit;
+		else if (state == AnalysisStates::C || state == AnalysisStates::D) lexem.type = co1;
+		else if (state == AnalysisStates::E) lexem.type = other;
+		else if (state == AnalysisStates::G) lexem.type = eq;
+		else if (state == AnalysisStates::H) lexem.type = ao;
+		else if (state == AnalysisStates::X) lexem.type = semicolon;
+		else if (state == AnalysisStates::Z) lexem.type = co1;
 
 
-		if (state == AState::F) //запись текущей лексемы в выходной список и инициализация новой лексемы
+		if (state == AnalysisStates::F)
 		{
 			int length = pos - firstPos;
-			lexema.str = new char[length + 1];
-			lexema.str = word(text, firstPos, firstPos + length); //запись в лексему
-			lexema.len = length;
-			vec.push_back(lexema); //запись лексемы в список
-			state = AState::S;
-			--pos;
+            lexem.str = new char[length + 1];
+            lexem.str = word(text, firstPos, firstPos + length);
+            lexem.len = length;
+			vec.push_back(lexem);
+			state = AnalysisStates::S;
+            correctPosition(pos);
 		}
 		++pos;
 	}
-	return;
-}
+	}
 
 
 int main()
@@ -197,69 +190,72 @@ int main()
 	ifstream fin("input.txt");
 	ofstream fout("output.txt");
 	int size = 0;
-	while (fin.get() != EOF) ++size;  //считаем кол-во символов в строке
-	fin.clear(); //сбрасывание флагов ошибки
-	fin.seekg(0); //переводит итератор на начало
-	char* text = new char[++size];		//создаем массив, в котором будут храниться исходные данные
+	while (fin.get() != EOF) ++size;
+	fin.clear();
+	fin.seekg(0);
+	char* text = new char[++size];
 	fin.getline(text, size, '\0');
 	fin.close();
-	vector <Lex> vec;
-	LexAnalysis(text, size, vec);
+	vector <Lex> array;
+	LexAnalysis(text, size, array);
 	delete[] text;
-	//вывод результата
-	//enum ELexType{alpha, digit, separator, eq, co1, co2, ao, other};
-	for (int i = 0; i < (int)vec.size(); ++i)
+
+	for (size_t i = 0; i < (size_t)array.size(); ++i)
 	{
-		cout << vec[i].str;
-		if ((vec[i].type == digit) && (-32768  < atoi(vec[i].str) ) && (atoi(vec[i].str) < 32767)) cout << "[vl]" << ' ';
-		else if (vec[i].type == eq) cout << "[eq]" << ' ';
-		else if (vec[i].type == co1) cout << "[co]" << ' ';
-		else if (vec[i].type == ao) cout << "[ao]" << ' ';
-		else if (vec[i].type == other) cout << "[wl]" << ' ';
-		else if (vec[i].type == semicolon) cout << "[sc]" << ' ';
-		else if (vec[i].type == alpha)
+		cout << array[i].str;
+		if ((array[i].type == digit) && (-32768  < atoi(array[i].str) ) && (atoi(array[i].str) < 32767)) cout << "[vl]" << ' ';
+		else if (array[i].type == eq) cout << "[eq]" << ' ';
+		else if (array[i].type == co1) cout << "[co]" << ' ';
+		else if (array[i].type == ao) cout << "[ao]" << ' ';
+		else if (array[i].type == other) cout << "[wl]" << ' ';
+		else if (array[i].type == semicolon) cout << "[sc]" << ' ';
+		else if (array[i].type == alpha)
 		{
-			if (!strcmp(vec[i].str, "for") || !strcmp(vec[i].str, "to") || !strcmp(vec[i].str, "next") || !strcmp(vec[i].str, "not") || !strcmp(vec[i].str, "and") || !strcmp(vec[i].str, "or")) cout << "[kw]" << ' ';
-			else if (vec[i].len <= 5) cout << "[id]" << ' ';
+			if (!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "not") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "or")) cout << "[kw]" << ' ';
+			else if (array[i].len <= 5) cout << "[id]" << ' ';
 			else cout << "[wl]" << ' ';
 		}
 		else cout << "[wl]" << ' ';
-		fout << vec[i].str;
-		if ((vec[i].type == digit) && (-32768 < atoi(vec[i].str)) && (atoi(vec[i].str) < 32767)) fout << "[vl]" << ' ';			//int isxdigit( int с );
-		else if (vec[i].type == eq) fout << "[eq]" << ' ';
-		else if (vec[i].type == co1) fout << "[co]" << ' ';
-		else if (vec[i].type == ao) fout << "[ao]" << ' ';
-		else if (vec[i].type == other) fout << "[wl]" << ' ';
-		else if (vec[i].type == semicolon) fout << "[sc]" << ' ';
-		else if (vec[i].type == alpha)
+		fout << array[i].str;
+		if ((array[i].type == digit) && (-32768 < atoi(array[i].str)) && (atoi(array[i].str) < 32767)) fout << "[vl]" << ' ';
+        else if (array[i].type == eq) fout << "[eq]" << ' ';
+		else if (array[i].type == co1) fout << "[co]" << ' ';
+		else if (array[i].type == ao) fout << "[ao]" << ' ';
+		else if (array[i].type == other) fout << "[wl]" << ' ';
+		else if (array[i].type == semicolon) fout << "[sc]" << ' ';
+		else if (array[i].type == alpha)
 		{
-			if (!strcmp(vec[i].str, "for") || !strcmp(vec[i].str, "to") || !strcmp(vec[i].str, "next") || !strcmp(vec[i].str, "not") || !strcmp(vec[i].str, "and") || !strcmp(vec[i].str, "or")) fout << "[kw]" << ' ';
-			else if (vec[i].len <= 5) fout << "[id]" << ' ';
+			if (!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "not") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "or")) fout << "[kw]" << ' ';
+			else if (array[i].len <= 5) fout << "[id]" << ' ';
 			else fout << "[wl]" << ' ';
 		}
 		else fout << "[wl]" << ' ';
 	}
+
 	cout << '\n';
 	fout << '\n';
-	for (int i = 0; i < (int)vec.size(); ++i)
+
+	for (int i = 0; i < (int)array.size(); ++i)
 	{
-		if (vec[i].type == alpha)
+		if (array[i].type == alpha)
 		{
-			if (!(!strcmp(vec[i].str, "for") || !strcmp(vec[i].str, "to") || !strcmp(vec[i].str, "next") || !strcmp(vec[i].str, "or") || !strcmp(vec[i].str, "and") || !strcmp(vec[i].str, "not")) && (vec[i].len <= 5))
+			if (!(!strcmp(array[i].str, "do") || !strcmp(array[i].str, "while") || !strcmp(array[i].str, "loop") || !strcmp(array[i].str, "or") || !strcmp(array[i].str, "and") || !strcmp(array[i].str, "not")) && (array[i].len <= 5))
 			{
-				cout << vec[i].str << ' ';
-				fout << vec[i].str << ' ';
+				cout << array[i].str << ' ';
+				fout << array[i].str << ' ';
 			}
 		}
 	}
+
 	cout << '\n';
 	fout << '\n';
-	for (int i = 0; i < (int)vec.size(); ++i)
+
+	for (int i = 0; i < (int)array.size(); ++i)
 	{
-		if ((vec[i].type == digit) && (-32768 < atoi(vec[i].str)) && (atoi(vec[i].str) < 32767))
+		if ((array[i].type == digit) && (-32768 < atoi(array[i].str)) && (atoi(array[i].str) < 32767))
 		{
-			cout << vec[i].str << ' ';
-			fout << vec[i].str << ' ';
+			cout << array[i].str << ' ';
+			fout << array[i].str << ' ';
 		}
 	}
 	fout.close();
